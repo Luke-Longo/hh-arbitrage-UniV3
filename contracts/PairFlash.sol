@@ -49,6 +49,7 @@ contract PairFlash is IUniswapV3FlashCallback, PeripheryImmutableState, Peripher
 
         // profitable check
         // exactInputSingle will fail if this amount not met
+        // the fees are input params from the uniswap pool calling the callback function
         uint256 amount1Min = LowGasSafeMath.add(decoded.amount1, fee1);
         uint256 amount0Min = LowGasSafeMath.add(decoded.amount0, fee0);
 

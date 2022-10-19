@@ -12,6 +12,9 @@ type NetworkConfigItem = {
     oracle?: string
     jobId?: string
     ethUsdPriceFeed?: string
+    SwapRouter?: string
+    UniswapFactory?: string
+    wethAddress?: string
 }
 
 type NetworkConfigMap = {
@@ -35,12 +38,18 @@ export const networkConfig: NetworkConfigMap = {
         fundAmount: BigNumber.from("1000000000000000000"),
         keepersUpdateInterval: "30",
         ethUsdPriceFeed: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
+        SwapRouter: "0xE592427A0AEce92De3Edee1F18E0157C05861564",
+        UniswapFactory: "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+        wethAddress: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
     },
     1: {
         name: "mainnet",
         linkToken: "0x514910771af9ca656af840dff83e8264ecf986ca",
         fundAmount: BigNumber.from("0"),
         keepersUpdateInterval: "30",
+        SwapRouter: "0xE592427A0AEce92De3Edee1F18E0157C05861564",
+        UniswapFactory: "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+        wethAddress: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
     },
     5: {
         name: "goerli",
@@ -53,6 +62,9 @@ export const networkConfig: NetworkConfigMap = {
         fee: "100000000000000000",
         fundAmount: BigNumber.from("100000000000000000"),
         keepersUpdateInterval: "30",
+        SwapRouter: "0xE592427A0AEce92De3Edee1F18E0157C05861564",
+        UniswapFactory: "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+        wethAddress: "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
     },
     137: {
         name: "polygon",
@@ -62,6 +74,9 @@ export const networkConfig: NetworkConfigMap = {
         jobId: "12b86114fa9e46bab3ca436f88e1a912",
         fee: "100000000000000",
         fundAmount: BigNumber.from("100000000000000"),
+        SwapRouter: "0xE592427A0AEce92De3Edee1F18E0157C05861564",
+        UniswapFactory: "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+        wethAddress: "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619",
     },
 }
 
