@@ -46,7 +46,8 @@
     "@chainlink/test-helpers": "^0.0.7-alpha",
     "@chainlink/token": "^1.1.0",
     "babel-eslint": "^10.1.0",
-    "dotenv": "^10.0.0"
+    "dotenv": "^10.0.0",
+    "hardhat-shorthand": "^1.0.0"
   },
   "mocha": {
     "timeout": 10000000
