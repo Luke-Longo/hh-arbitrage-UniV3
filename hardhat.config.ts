@@ -6,9 +6,18 @@ import "@nomicfoundation/hardhat-chai-matchers"
 import "hardhat-deploy"
 import "hardhat-contract-sizer"
 import "@appliedblockchain/chainlink-plugins-fund-link"
-import "./tasks"
 
 dotenv.config()
+
+const UNISWAP_SETTING = {
+    version: "0.7.6",
+    settings: {
+        optimizer: {
+            enabled: true,
+            runs: 2_000,
+        },
+    },
+}
 
 const MAINNET_RPC_URL =
     process.env.MAINNET_RPC_URL ||
@@ -100,6 +109,7 @@ const config: HardhatUserConfig = {
             {
                 version: "0.8.7",
             },
+            { version: "0.7.6" },
             {
                 version: "0.6.6",
             },
@@ -107,6 +117,11 @@ const config: HardhatUserConfig = {
                 version: "0.4.24",
             },
         ],
+        overrides: {
+            "@uniswap/v3-core/contracts/libraries/FullMath.sol": UNISWAP_SETTING,
+            "@uniswap/v3-core/contracts/libraries/TickMath.sol": UNISWAP_SETTING,
+            "@uniswap/v3-periphery/contracts/libraries/PoolAddress.sol": UNISWAP_SETTING,
+        },
     },
     mocha: {
         timeout: 200000, // 200 seconds max for running tests
