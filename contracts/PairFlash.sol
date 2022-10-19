@@ -38,7 +38,17 @@ contract PairFlash is IUniswapV3FlashCallback, PeripheryImmutableState, Peripher
         uint256 fee1,
         bytes calldata data
     ) external override {
+        // FlashCallbackData is defined in the PairFlash contract {
+        // uint256 amount0;
+        // uint256 amount1;
+        // address payer;
+        // PoolAddress.PoolKey poolKey;
+        // uint24 poolFee2;
+        // uint24 poolFee3;
+        // }
+        // so you get the amount 0 and amout 1 that you are wishing to flash swap with the address of the payer and the pool key (token0, token1, fee) and the pool fees for each of the tokens based on the addresses input into the initFlash function
         FlashCallbackData memory decoded = abi.decode(data, (FlashCallbackData));
+        // verifys that the callback is from the correct pool
         CallbackValidation.verifyCallback(factory, decoded.poolKey);
 
         address token0 = decoded.poolKey.token0;
@@ -130,11 +140,14 @@ contract PairFlash is IUniswapV3FlashCallback, PeripheryImmutableState, Peripher
     /// @param params The parameters necessary for flash and the callback, passed in as FlashParams
     /// @notice Calls the pools flash function with data needed in `uniswapV3FlashCallback`
     function initFlash(FlashParams memory params) external {
+        // set the poolKey to the {token0, token1, and fee1}
         PoolAddress.PoolKey memory poolKey = PoolAddress.PoolKey({
             token0: params.token0,
             token1: params.token1,
             fee: params.fee1
         });
+        // defines the pool you are borrowing from based on the parmas passsed to the function
+        // factory value comes from the PeripheryImmutableState contract and is the uniswap factory address
         IUniswapV3Pool pool = IUniswapV3Pool(PoolAddress.computeAddress(factory, poolKey));
         // recipient of borrowed amounts
         // amount of token0 requested to borrow

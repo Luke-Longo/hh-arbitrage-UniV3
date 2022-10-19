@@ -3,3 +3,4 @@
 /* eslint-disable */
 import type * as arbitrageV3Sol from "./ArbitrageV3.sol";
 export type { arbitrageV3Sol };
+export type { PairFlash } from "./PairFlash";

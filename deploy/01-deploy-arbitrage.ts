@@ -6,18 +6,23 @@ const deploy: DeployFunction = async (hre) => {
     const { deployments, getNamedAccounts } = hre
     const { deploy } = deployments
     const { deployer } = await getNamedAccounts()
-
+    const chainId = await network.config.chainId!
+    console.log("chainId", chainId)
     let args = [
-        networkConfig[network.name].SwapRouter,
-        networkConfig[network.name].UniswapFactory,
-        networkConfig[network.name].wethAddress,
+        networkConfig[chainId].SwapRouter,
+        networkConfig[chainId].UniswapFactory,
+        networkConfig[chainId].wethAddress,
     ]
 
-    await deploy("PairFlash", {
+    const deployTx = await deploy("PairFlash", {
         from: deployer,
         args,
         log: true,
     })
+
+    if (deployTx.newlyDeployed) {
+        console.log("Contract PairFlash deployed at", deployTx.address)
+    }
 }
 
 export default deploy

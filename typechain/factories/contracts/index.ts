@@ -2,3 +2,4 @@
 /* tslint:disable */
 /* eslint-disable */
 export * as arbitrageV3Sol from "./ArbitrageV3.sol";
+export { PairFlash__factory } from "./PairFlash__factory";

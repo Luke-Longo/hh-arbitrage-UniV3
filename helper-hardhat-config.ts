@@ -29,6 +29,9 @@ export const networkConfig: NetworkConfigMap = {
         jobId: "29fa9aa13bf1468788b7cc4a500a45b8",
         fundAmount: BigNumber.from("1000000000000000000"),
         keepersUpdateInterval: "30",
+        SwapRouter: "0xE592427A0AEce92De3Edee1F18E0157C05861564",
+        UniswapFactory: "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+        wethAddress: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
     },
     31337: {
         name: "localhost",

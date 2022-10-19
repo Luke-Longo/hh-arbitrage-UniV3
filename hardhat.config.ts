@@ -42,11 +42,11 @@ const config: HardhatUserConfig = {
         hardhat: {
             hardfork: "merge",
             // If you want to do some forking set `enabled` to true
-            // forking: {
-            //     url: MAINNET_RPC_URL,
-            //     blockNumber: Number(FORKING_BLOCK_NUMBER),
-            //     enabled: false,
-            // },
+            forking: {
+                url: MAINNET_RPC_URL,
+                // blockNumber: Number(FORKING_BLOCK_NUMBER),
+                enabled: true,
+            },
             chainId: 31337,
         },
         localhost: {
