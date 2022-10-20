@@ -21,14 +21,22 @@ contract PairFlash is IUniswapV3FlashCallback, PeripheryImmutableState, Peripher
     ISwapRouter public immutable i_swapRouter;
     address private immutable i_owner;
 
-    event Flash(address token0, address token1, uint256 fee1, uint256 amount0, uint256 amount1, uint256 fee2, uint256 fee3);
+    event Flash(
+        address token0,
+        address token1,
+        uint256 fee1,
+        uint256 amount0,
+        uint256 amount1,
+        uint256 fee2,
+        uint256 fee3
+    );
 
     event Withdraw(address indexed sender, uint256 amount);
 
     constructor(
         ISwapRouter _swapRouter,
         address _factory,
-        address _WETH9,
+        address _WETH9
     ) PeripheryImmutableState(_factory, _WETH9) {
         i_swapRouter = _swapRouter;
         i_owner = msg.sender;
@@ -79,8 +87,9 @@ contract PairFlash is IUniswapV3FlashCallback, PeripheryImmutableState, Peripher
         uint256 amount0Min = LowGasSafeMath.add(decoded.amount0, fee0);
         uint256 amount1Min = LowGasSafeMath.add(decoded.amount1, fee1);
 
-
         // below you do not need to pull a loan on both the tokens you can pick whichever token you want to pull the loan on and then swap the other token for the token you pulled the loan on
+
+        // // calculte the deadline for each transaction
 
         // below you will want to run deiffernt swaps using the flash loan proided tokens,
         // call exactInputSingle for swapping token1 (input) for token0 (output) in pool w/fee2
@@ -97,8 +106,6 @@ contract PairFlash is IUniswapV3FlashCallback, PeripheryImmutableState, Peripher
                 sqrtPriceLimitX96: 0
             })
         );
-
-
 
         // call exactInputSingle for swapping token0 for token 1 in pool w/fee3
         uint256 amountOut1 = i_swapRouter.exactInputSingle(
@@ -119,7 +126,7 @@ contract PairFlash is IUniswapV3FlashCallback, PeripheryImmutableState, Peripher
         uint256 amount0Owed = LowGasSafeMath.add(decoded.amount0, fee0);
         uint256 amount1Owed = LowGasSafeMath.add(decoded.amount1, fee1);
 
-        // allows for the transfer of the owed tokens to this contract 
+        // allows for the transfer of the owed tokens to this contract
         TransferHelper.safeApprove(token0, address(this), amount0Owed);
         TransferHelper.safeApprove(token1, address(this), amount1Owed);
 
@@ -141,7 +148,7 @@ contract PairFlash is IUniswapV3FlashCallback, PeripheryImmutableState, Peripher
         }
     }
 
-    //fee1 is the fee of the pool from the initial borrow
+    //fee1 is the fee of the pool from the initial borrow, basically the identifier for the pool
     //fee2 is the fee of the first pool to arb from
     //fee3 is the fee of the second pool to arb from
     struct FlashParams {
@@ -197,7 +204,15 @@ contract PairFlash is IUniswapV3FlashCallback, PeripheryImmutableState, Peripher
                 })
             )
         );
-        emit Flash(params.token0, params.token1, params.fee1, params.amount0, params.amount1, params.fee2, params.fee3);
+        emit Flash(
+            params.token0,
+            params.token1,
+            params.fee1,
+            params.amount0,
+            params.amount1,
+            params.fee2,
+            params.fee3
+        );
     }
 
     function withdraw() external _ownerOnly {
