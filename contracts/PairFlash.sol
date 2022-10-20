@@ -19,13 +19,18 @@ contract PairFlash is IUniswapV3FlashCallback, PeripheryImmutableState, Peripher
     using LowGasSafeMath for int256;
 
     ISwapRouter public immutable swapRouter;
+    address private immutable i_owner;
+    event Flash(address indexed sender, uint256 amount0, uint256 amount1, bytes data);
+    event Withdraw(address indexed sender, uint256 amount);
 
     constructor(
         ISwapRouter _swapRouter,
         address _factory,
-        address _WETH9
+        address _WETH9,
+        address owner
     ) PeripheryImmutableState(_factory, _WETH9) {
         swapRouter = _swapRouter;
+        i_owner = owner;
     }
 
     /// @param fee0 The fee from calling flash for token0
@@ -148,7 +153,9 @@ contract PairFlash is IUniswapV3FlashCallback, PeripheryImmutableState, Peripher
         });
         // defines the pool you are borrowing from based on the parmas passsed to the function
         // factory value comes from the PeripheryImmutableState contract and is the uniswap factory address
+        // the pool variable is the uniswap pool contract of the pool you are borrowing from
         IUniswapV3Pool pool = IUniswapV3Pool(PoolAddress.computeAddress(factory, poolKey));
+        // defines the data that will be passed to the callback function
         // recipient of borrowed amounts
         // amount of token0 requested to borrow
         // amount of token1 requested to borrow
@@ -169,5 +176,15 @@ contract PairFlash is IUniswapV3FlashCallback, PeripheryImmutableState, Peripher
                 })
             )
         );
+    }
+
+    modifier _ownerOnly() {
+        if (msg.sender != i_owner) revert("Not owner");
+        _;
+    }
+
+    function withdraw() external _ownerOnly {
+        payable(msg.sender).transfer(address(this).balance);
+        emit Withdraw(msg.sender, address(this).balance);
     }
 }
