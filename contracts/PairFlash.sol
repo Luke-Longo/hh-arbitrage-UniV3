@@ -20,7 +20,9 @@ contract PairFlash is IUniswapV3FlashCallback, PeripheryImmutableState, Peripher
 
     ISwapRouter public immutable i_swapRouter;
     address private immutable i_owner;
-    event Flash(address indexed sender, uint256 amount0, uint256 amount1, bytes data);
+
+    event Flash(address token0, address token1, uint256 fee1, uint256 amount0, uint256 amount1, uint256 fee2, uint256 fee3);
+
     event Withdraw(address indexed sender, uint256 amount);
 
     constructor(
@@ -78,6 +80,8 @@ contract PairFlash is IUniswapV3FlashCallback, PeripheryImmutableState, Peripher
         uint256 amount1Min = LowGasSafeMath.add(decoded.amount1, fee1);
 
 
+        // below you do not need to pull a loan on both the tokens you can pick whichever token you want to pull the loan on and then swap the other token for the token you pulled the loan on
+
         // below you will want to run deiffernt swaps using the flash loan proided tokens,
         // call exactInputSingle for swapping token1 (input) for token0 (output) in pool w/fee2
         // this will fail if the amout out is below the desired min amount out
@@ -120,7 +124,7 @@ contract PairFlash is IUniswapV3FlashCallback, PeripheryImmutableState, Peripher
         TransferHelper.safeApprove(token1, address(this), amount1Owed);
 
         // repay the flash loan
-        // this will fail if the amount owed is less than or equal to zero
+        // this will pay the amount owed to the pool that called the callback function if the amoutn owed is greater than 0, ie if you took out a loan on the token
         if (amount0Owed > 0) pay(token0, address(this), msg.sender, amount0Owed);
         if (amount1Owed > 0) pay(token1, address(this), msg.sender, amount1Owed);
 
@@ -193,6 +197,7 @@ contract PairFlash is IUniswapV3FlashCallback, PeripheryImmutableState, Peripher
                 })
             )
         );
+        emit Flash(params.token0, params.token1, params.fee1, params.amount0, params.amount1, params.fee2, params.fee3);
     }
 
     function withdraw() external _ownerOnly {
