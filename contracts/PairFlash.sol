@@ -18,7 +18,7 @@ contract PairFlash is IUniswapV3FlashCallback, PeripheryImmutableState, Peripher
     using LowGasSafeMath for uint256;
     using LowGasSafeMath for int256;
 
-    ISwapRouter public immutable swapRouter;
+    ISwapRouter public immutable i_swapRouter;
     address private immutable i_owner;
     event Flash(address indexed sender, uint256 amount0, uint256 amount1, bytes data);
     event Withdraw(address indexed sender, uint256 amount);
@@ -27,10 +27,14 @@ contract PairFlash is IUniswapV3FlashCallback, PeripheryImmutableState, Peripher
         ISwapRouter _swapRouter,
         address _factory,
         address _WETH9,
-        address owner
     ) PeripheryImmutableState(_factory, _WETH9) {
-        swapRouter = _swapRouter;
-        i_owner = owner;
+        i_swapRouter = _swapRouter;
+        i_owner = msg.sender;
+    }
+
+    modifier _ownerOnly() {
+        if (msg.sender != i_owner) revert("Not owner");
+        _;
     }
 
     /// @param fee0 The fee from calling flash for token0
@@ -52,24 +56,32 @@ contract PairFlash is IUniswapV3FlashCallback, PeripheryImmutableState, Peripher
         // uint24 poolFee3;
         // }
         // so you get the amount 0 and amout 1 that you are wishing to flash swap with the address of the payer and the pool key (token0, token1, fee) and the pool fees for each of the tokens based on the addresses input into the initFlash function
+        // setting the decoded data to a variable
         FlashCallbackData memory decoded = abi.decode(data, (FlashCallbackData));
         // verifys that the callback is from the correct pool
         CallbackValidation.verifyCallback(factory, decoded.poolKey);
 
+        // the token addresses you are looking to swap
         address token0 = decoded.poolKey.token0;
         address token1 = decoded.poolKey.token1;
 
-        TransferHelper.safeApprove(token0, address(swapRouter), decoded.amount0);
-        TransferHelper.safeApprove(token1, address(swapRouter), decoded.amount1);
+        // look into the transfer helper to see how this works
+        // approves the amount of token0 and token1 so that the router can call transfer on the token contracts and send the tokens back to the router, allows for the swap from SwapRouter
+        TransferHelper.safeApprove(token0, address(i_swapRouter), decoded.amount0);
+        TransferHelper.safeApprove(token1, address(i_swapRouter), decoded.amount1);
 
         // profitable check
         // exactInputSingle will fail if this amount not met
         // the fees are input params from the uniswap pool calling the callback function
-        uint256 amount1Min = LowGasSafeMath.add(decoded.amount1, fee1);
+        // these are the minimum amounts of token0 and token1 that you can recieve on the swaps or else the execution will fail
         uint256 amount0Min = LowGasSafeMath.add(decoded.amount0, fee0);
+        uint256 amount1Min = LowGasSafeMath.add(decoded.amount1, fee1);
 
-        // call exactInputSingle for swapping token1 for token0 in pool w/fee2
-        uint256 amountOut0 = swapRouter.exactInputSingle(
+
+        // below you will want to run deiffernt swaps using the flash loan proided tokens,
+        // call exactInputSingle for swapping token1 (input) for token0 (output) in pool w/fee2
+        // this will fail if the amout out is below the desired min amount out
+        uint256 amountOut0 = i_swapRouter.exactInputSingle(
             ISwapRouter.ExactInputSingleParams({
                 tokenIn: token1,
                 tokenOut: token0,
@@ -82,8 +94,10 @@ contract PairFlash is IUniswapV3FlashCallback, PeripheryImmutableState, Peripher
             })
         );
 
+
+
         // call exactInputSingle for swapping token0 for token 1 in pool w/fee3
-        uint256 amountOut1 = swapRouter.exactInputSingle(
+        uint256 amountOut1 = i_swapRouter.exactInputSingle(
             ISwapRouter.ExactInputSingleParams({
                 tokenIn: token0,
                 tokenOut: token1,
@@ -97,19 +111,22 @@ contract PairFlash is IUniswapV3FlashCallback, PeripheryImmutableState, Peripher
         );
 
         // end up with amountOut0 of token0 from first swap and amountOut1 of token1 from second swap
+        // these are also the values of the amount0Min and amount1Min
         uint256 amount0Owed = LowGasSafeMath.add(decoded.amount0, fee0);
         uint256 amount1Owed = LowGasSafeMath.add(decoded.amount1, fee1);
 
+        // allows for the transfer of the owed tokens to this contract 
         TransferHelper.safeApprove(token0, address(this), amount0Owed);
         TransferHelper.safeApprove(token1, address(this), amount1Owed);
 
+        // repay the flash loan
+        // this will fail if the amount owed is less than or equal to zero
         if (amount0Owed > 0) pay(token0, address(this), msg.sender, amount0Owed);
         if (amount1Owed > 0) pay(token1, address(this), msg.sender, amount1Owed);
 
         // if profitable pay profits to payer
         if (amountOut0 > amount0Owed) {
             uint256 profit0 = LowGasSafeMath.sub(amountOut0, amount0Owed);
-
             TransferHelper.safeApprove(token0, address(this), profit0);
             pay(token0, address(this), decoded.payer, profit0);
         }
@@ -176,11 +193,6 @@ contract PairFlash is IUniswapV3FlashCallback, PeripheryImmutableState, Peripher
                 })
             )
         );
-    }
-
-    modifier _ownerOnly() {
-        if (msg.sender != i_owner) revert("Not owner");
-        _;
     }
 
     function withdraw() external _ownerOnly {
