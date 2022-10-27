@@ -48,6 +48,7 @@
     "@chainlink/token": "^1.1.0",
     "@uniswap/v3-core": "^1.0.1",
     "@uniswap/v3-periphery": "^1.4.2",
+    "alchemy-sdk": "^2.2.0",
     "babel-eslint": "^10.1.0",
     "dotenv": "^10.0.0"
   },
