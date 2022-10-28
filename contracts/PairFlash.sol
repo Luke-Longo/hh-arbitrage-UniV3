@@ -57,6 +57,8 @@ contract PairFlash is IUniswapV3FlashCallback, PeripheryImmutableState, Peripher
         uint256 fee1,
         bytes calldata data
     ) external override {
+        // flashbot uncle check
+        // require(blockhash(block.number - 1) == expectedParentHash, "block was uncled");
         // FlashCallbackData is defined in the PairFlash contract {
         // uint256 amount0;
         // uint256 amount1;

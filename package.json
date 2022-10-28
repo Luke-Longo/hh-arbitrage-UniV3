@@ -46,6 +46,7 @@
     "@chainlink/contracts": "^0.4.0",
     "@chainlink/test-helpers": "^0.0.7-alpha",
     "@chainlink/token": "^1.1.0",
+    "@flashbots/ethers-provider-bundle": "^0.5.0",
     "@uniswap/v3-core": "^1.0.1",
     "@uniswap/v3-periphery": "^1.4.2",
     "alchemy-sdk": "^2.2.0",
